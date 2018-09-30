@@ -132,6 +132,9 @@ class BeamSearchDecoder(object):
       decoded_words: list of strings
       ex_index: int, the index with which to label the files
     """
+    ref_index = int(reference_sents[0].strip(' .'))
+    tf.logging.info("Processing story %i to file" % ref_index)
+    
     # First, divide decoded output into sentences
     decoded_sents = []
     while len(decoded_words) > 0:
@@ -149,8 +152,9 @@ class BeamSearchDecoder(object):
     reference_sents = [make_html_safe(w) for w in reference_sents]
 
     # Write to file
-    ref_file = os.path.join(self._rouge_ref_dir, "%06d_reference.txt" % ex_index)
-    decoded_file = os.path.join(self._rouge_dec_dir, "%06d_decoded.txt" % ex_index)
+    ref_file = os.path.join(self._rouge_ref_dir, "%06d_reference.txt" % ref_index)
+    #decoded_file = os.path.join(self._rouge_dec_dir, "%06d_decoded.txt" % ref_index)
+    decoded_file = os.path.join(self._rouge_dec_dir, "%d.txt" % ref_index)
 
     with open(ref_file, "w") as f:
       for idx,sent in enumerate(reference_sents):

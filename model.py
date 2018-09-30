@@ -24,6 +24,7 @@ from attention_decoder import attention_decoder
 from tensorflow.contrib.tensorboard.plugins import projector
 
 FLAGS = tf.app.flags.FLAGS
+TF_DEVICE = "/cpu:0"
 
 class SummarizationModel(object):
   """A class to represent a sequence-to-sequence model for text summarization. Supports both baseline mode, pointer-generator mode, and coverage"""
@@ -293,7 +294,7 @@ class SummarizationModel(object):
     gradients = tf.gradients(loss_to_minimize, tvars, aggregation_method=tf.AggregationMethod.EXPERIMENTAL_TREE)
 
     # Clip the gradients
-    with tf.device("/gpu:0"):
+    with tf.device(TF_DEVICE):
       grads, global_norm = tf.clip_by_global_norm(gradients, self._hps.max_grad_norm)
 
     # Add a summary
@@ -301,7 +302,7 @@ class SummarizationModel(object):
 
     # Apply adagrad optimizer
     optimizer = tf.train.AdagradOptimizer(self._hps.lr, initial_accumulator_value=self._hps.adagrad_init_acc)
-    with tf.device("/gpu:0"):
+    with tf.device(TF_DEVICE):
       self._train_op = optimizer.apply_gradients(zip(grads, tvars), global_step=self.global_step, name='train_step')
 
 
@@ -310,7 +311,7 @@ class SummarizationModel(object):
     tf.logging.info('Building graph...')
     t0 = time.time()
     self._add_placeholders()
-    with tf.device("/gpu:0"):
+    with tf.device(TF_DEVICE):
       self._add_seq2seq()
     self.global_step = tf.Variable(0, name='global_step', trainable=False)
     if self._hps.mode == 'train':
